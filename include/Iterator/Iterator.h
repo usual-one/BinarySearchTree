@@ -2,14 +2,18 @@
 #define CONTAINER_ITERATOR_H
 
 template<typename T>
-class BinaryTree;
+class BinarySearchTree;
 
 template<typename T>
-class Iterator{
+class Iterator {
 public:
     Iterator() = delete;
 
-    Iterator(const BinaryTree<T> &tree);
+    Iterator(const BinarySearchTree<T> &tree);
+
+    Iterator<T> begin();
+
+    Iterator<T> end();
 
     Iterator<T> next();
 
@@ -38,7 +42,7 @@ public:
     bool operator>=(Iterator<T> &it);
 
 private:
-    BinaryTree<T> *current_;
+    BinarySearchTree<T> *current_;
 };
 
-#endif //CONTAINER_ITERATOR_H
+#endif  // CONTAINER_ITERATOR_H

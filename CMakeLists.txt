@@ -4,11 +4,11 @@ project(Container)
 set(CMAKE_CXX_STANDARD 17)
 
 add_library(BinaryTree SHARED
-        src/BinaryTree.cpp
-        src/Iterator.cpp
-        src/InorderIterator.cpp
-        src/PreorderIterator.cpp
-        src/PostorderIterator.cpp)
+        src/BinarySearchTree.cpp
+        src/Iterator/Iterator.cpp
+        src/Iterator/InOrderIterator.cpp
+        src/Iterator/PreOrderIterator.cpp
+        src/Iterator/PostOrderIterator.cpp src/Iterator/ReverseOrderIterator.cpp)
 target_include_directories(BinaryTree PUBLIC include)
 
 add_executable(Container main.cpp)
