@@ -6,6 +6,8 @@
 #include <initializer_list>
 #include <memory>
 #include <ostream>
+#include "BSTException.h"
+#include "BSTIteratorException.h"
 
 enum tree_order {
     IN_ORDER,
@@ -195,7 +197,7 @@ void BinarySearchTree<T>::setComparator(std::function<int(T, T)> comparator) {
 template<typename T>
 size_t BinarySearchTree<T>::size() const {
     size_t size = 0;
-    if (empty_) {
+    if (isEmpty()) {
         return size;
     }
     size++;
@@ -222,9 +224,10 @@ void BinarySearchTree<T>::add(const T &elem) {
         if (!parent_) {
             parent_ = this;
         }
+        return;
     }
     if (!comparator_(elem, value_)) {
-        return;
+        throw BSTDuplicateValueException("duplicate value to add");
     }
     if (comparator_(elem, value_) < 0) {
         if (!smaller_child_) {
@@ -243,8 +246,16 @@ void BinarySearchTree<T>::add(const T &elem) {
 
 template<typename T>
 void BinarySearchTree<T>::addMany(const T *arr, size_t size) {
+    bool duplicates = false;
     for (size_t i = 0; i < size; i++) {
-        add(arr[i]);
+        try {
+            add(arr[i]);
+        } catch (BSTDuplicateValueException &err) {
+            duplicates = true;
+        }
+    }
+    if (duplicates) {
+        throw BSTDuplicateValueException("duplicate values to add");
     }
 }
 
@@ -252,7 +263,7 @@ template<typename T>
 void BinarySearchTree<T>::remove(const T &elem) {
     BinarySearchTree<T> *found = find(elem);
     if (!found) {
-        return;
+        throw BSTNonexistentValueException("nonexistent value to remove");
     }
 
     BinarySearchTree *successor;
@@ -288,8 +299,16 @@ void BinarySearchTree<T>::remove(const T &elem) {
 
 template<typename T>
 void BinarySearchTree<T>::removeMany(const T *arr, size_t size) {
+    bool nonexistent = false;
     for (size_t i = 0; i < size; i++) {
-        remove(arr[i]);
+        try {
+            remove(arr[i]);
+        } catch (BSTNonexistentValueException &err) {
+            nonexistent = true;
+        }
+    }
+    if (nonexistent) {
+        throw BSTNonexistentValueException("nonexistent values to remove");
     }
 }
 
@@ -306,6 +325,9 @@ bool BinarySearchTree<T>::contains(const T &elem) const {
 
 template<typename T>
 bool BinarySearchTree<T>::contains(const BinarySearchTree<T> &obj) const {
+    if (obj.isEmpty()) {
+        throw BSTEmptyException("can't check empty tree presence");
+    }
     bool existence = this == obj;
     if (!existence && smaller_child_) {
         existence = smaller_child_->contains(obj);
@@ -335,17 +357,26 @@ BinarySearchTree<T> *BinarySearchTree<T>::find(const T &elem) const {
 
 template<typename T>
 T BinarySearchTree<T>::min() const {
+    if (isEmpty()) {
+        throw BSTEmptyException("can't find empty tree min value");
+    }
     return minElement()->value_;
 }
 
 template<typename T>
 T BinarySearchTree<T>::max() const {
+    if (isEmpty()) {
+        throw BSTEmptyException("can't find empty tree max value");
+    }
     return maxElement()->value;
 }
 
 template<typename T>
 void BinarySearchTree<T>::extend(const BinarySearchTree<T> &obj) {
-    for (auto it = obj.iteratorBegin(); it < obj.iteratorEnd(); it++) {
+    if (obj.isEmpty()) {
+        throw BSTEmptyException("empty tree to extend by");
+    }
+    for (auto it = *(obj.iteratorBegin()); it < *(obj.iteratorEnd()); it++) {
         add(*it);
     }
 }
@@ -425,6 +456,9 @@ Iterator<T> *BinarySearchTree<T>::iteratorEnd() const {
 
 template<typename T>
 T *BinarySearchTree<T>::toArray() const {
+    if (isEmpty()) {
+        throw BSTEmptyException("can't convert empty tree");
+    }
     T *arr = new T[size()];
     size_t arr_size = 0;
     addToArray(arr, &arr_size);
@@ -433,9 +467,6 @@ T *BinarySearchTree<T>::toArray() const {
 
 template<typename T>
 void BinarySearchTree<T>::addToArray(T *arr, size_t *current_size) const {
-    if (empty_) {
-        return;
-    }
     size_t *size = current_size;
     if (order_ == IN_ORDER) {
         if (smaller_child_) {
@@ -550,7 +581,7 @@ public:
     void previous();
 //    Сместиться на предыдущий элемент
 
-    T value();
+    T &value();
 //    Получить значение текущего элемента
 
     template<typename _T>
@@ -597,7 +628,11 @@ private:
 
 template<typename T>
 Iterator<T>::Iterator(const BinarySearchTree<T> &tree) {
-    flattened_tree_ = tree.toArray();
+    try {
+        flattened_tree_ = tree.toArray();
+    } catch (BSTEmptyException &err) {
+        flattened_tree_ = nullptr;
+    }
     size_ = tree.size();
     pos_ = 0;
 }
@@ -606,15 +641,21 @@ template<typename T>
 Iterator<T>::Iterator(const Iterator<T> &obj) {
     size_ = obj.size_;
     pos_ = obj.pos_;
-    flattened_tree_ = new T[obj.size_];
-    for (size_t i = 0; i < size_; i++) {
-        flattened_tree_[i] = obj.flattened_tree_[i];
+    if (!obj.size_) {
+        flattened_tree_ = nullptr;
+    } else {
+        flattened_tree_ = new T[obj.size_];
+        for (size_t i = 0; i < size_; i++) {
+            flattened_tree_[i] = obj.flattened_tree_[i];
+        }
     }
 }
 
 template<typename T>
 Iterator<T>::~Iterator() {
-    delete [] flattened_tree_;
+    if (flattened_tree_) {
+        delete [] flattened_tree_;
+    }
 }
 
 template<typename T>
@@ -636,6 +677,9 @@ bool Iterator<T>::is_end() {
 
 template<typename T>
 bool Iterator<T>::hasNext() {
+    if (!size_) {
+        return false;
+    }
     return pos_ <= size_ - 1;
 }
 
@@ -646,54 +690,63 @@ bool Iterator<T>::hasPrevious() {
 
 template<typename T>
 void Iterator<T>::next() {
-    if (hasNext()) {
-        pos_++;
+    if (!hasNext()) {
+        throw BSTIteratorOutOfRangeException("iterator out of range");
     }
+    pos_++;
 }
 
 template<typename T>
 void Iterator<T>::previous() {
-    if (hasPrevious()) {
-        pos_--;
+    if (!hasPrevious()) {
+        throw BSTIteratorOutOfRangeException("iterator out of range");
     }
+    pos_--;
 }
 
 template<typename T>
-T Iterator<T>::value() {
+T &Iterator<T>::value() {
+    if (is_end()) {
+        throw BSTIteratorAccessingEndValueException("end value to access");
+    }
     return flattened_tree_[pos_];
 }
 
 template<typename _T>
 Iterator<_T> &operator+(const Iterator<_T> &obj, int offset) {
     Iterator<_T> sum(obj);
-    if (obj.pos_ + offset < obj.size_) {
-        sum.pos_ += offset;
+    if (obj.pos_ + offset >= obj.size_ || obj.pos_ + offset < 0) {
+        throw BSTIteratorOutOfRangeException("iterator out of range");
     }
+    sum.pos_ += offset;
     return sum;
 }
 
 template<typename _T>
 Iterator<_T> &operator-(const Iterator<_T> &obj, int offset) {
     Iterator<_T> diff(obj);
-    if (obj.pos_ - offset >= 0) {
-        diff.pos_ -= offset;
+    if (obj.pos_ - offset >= obj.size_ || obj.pos_ - offset < 0) {
+        throw BSTIteratorOutOfRangeException("iterator out of range");
     }
+    diff.pos_ -= offset;
     return diff;
 }
 
 template<typename T>
 Iterator<T> &Iterator<T>::operator+=(int offset) {
-    if (pos_ + offset < size_) {
-        pos_ += offset;
+    if (pos_ + offset >= size_ || pos_ + offset < 0) {
+        throw BSTIteratorOutOfRangeException("iterator out of range");
     }
+    pos_ += offset;
     return this;
 }
 
 template<typename T>
 Iterator<T> &Iterator<T>::operator-=(int offset) {
-    if (pos_ - offset >= 0) {
-        pos_ -= offset;
+    if (pos_ - offset >= size_ || pos_ - offset < 0) {
+        throw BSTIteratorOutOfRangeException("iterator out of range");
     }
+    pos_ -= offset;
     return this;
 }
 
@@ -725,7 +778,7 @@ Iterator<T> &Iterator<T>::operator--(int) {
 
 template<typename T>
 T &Iterator<T>::operator*() {
-    return flattened_tree_[pos_];
+    return value();
 }
 
 template<typename T>
