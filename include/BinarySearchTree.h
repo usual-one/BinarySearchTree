@@ -5,11 +5,6 @@
 #include <ostream>
 #include <functional>
 
-#include "Iterator/InOrderIterator.h"
-#include "Iterator/ReverseOrderIterator.h"
-#include "Iterator/PreOrderIterator.h"
-#include "Iterator/PostOrderIterator.h"
-
 enum tree_order {
     IN_ORDER,
     REVERSE_ORDER,
@@ -110,16 +105,13 @@ public:
 //    Конвертация дерева в массив
 
 private:
-//    bool isLeaf();
-//    Проверить является ли ветка листом (имеет ли дочерние элементы)
-
     BinarySearchTree<T> *minElement();
 
     BinarySearchTree<T> *maxElement();
 
     static int defaultCompare(T a, T b);
 
-    Iterator<T> createIterator();
+    size_t addToArray(T *arr, size_t current_size);
 
     void dealloc();
 //    освобождения памяти всей текущей ветки
@@ -404,23 +396,60 @@ bool operator==(const BinarySearchTree<T> &obj1, const BinarySearchTree<T> &obj2
 
 template<typename T>
 Iterator<T> BinarySearchTree<T>::iteratorBegin() {
-    auto it = createIterator();
-    return it.begin();
+    Iterator<T> it(this);
+    return it.begin(this);
 }
 
 template<typename T>
 Iterator<T> BinarySearchTree<T>::iteratorEnd() {
-    auto it = createIterator();
-    return it.end();
+    Iterator<T> it(this);
+    return it.end(this);
 }
 
 template<typename T>
 T *BinarySearchTree<T>::toArray() {
     T *arr = new T[size()];
-    for (auto it = iteratorBegin(), i = 0; it < iteratorEnd(); it++, i++) {
-        arr[i] = *it;
-    }
+    addToArray(arr, 0);
     return arr;
+}
+
+template<typename T>
+size_t BinarySearchTree<T>::addToArray(T *arr, size_t current_size) {
+    size_t size = current_size;
+    if (order_ == IN_ORDER) {
+        if (smaller_child_) {
+            size += smaller_child_->addToArray(arr, size);
+        }
+        arr[size] = value_;
+        if (greater_child_) {
+            size += greater_child_->addToArray(arr, size);
+        }
+    } else if (order_ == REVERSE_ORDER) {
+        if (greater_child_) {
+            size += greater_child_->addToArray(arr, size);
+        }
+        arr[size] = value_;
+        if (smaller_child_) {
+            size += smaller_child_->addToArray(arr, size);
+        }
+    } else if (order_ == PRE_ORDER) {
+        arr[size] = value_;
+        if (greater_child_) {
+            size += greater_child_->addToArray(arr, size);
+        }
+        if (smaller_child_) {
+            size += smaller_child_->addToArray(arr, size);
+        }
+    } else if (order_ == POST_ORDER) {
+        if (greater_child_) {
+            size += greater_child_->addToArray(arr, size);
+        }
+        if (smaller_child_) {
+            size += smaller_child_->addToArray(arr, size);
+        }
+        arr[size] = value_;
+    }
+    return size;
 }
 
 template<typename T>
@@ -450,24 +479,6 @@ int BinarySearchTree<T>::defaultCompare(T a, T b) {
     } else {
         return 0;
     }
-}
-
-template<typename T>
-Iterator<T> BinarySearchTree<T>::createIterator() {
-    Iterator<T> it;
-    if (order_ == IN_ORDER) {
-        it = InOrderIterator<T>(this);
-    }
-    if (order_ == REVERSE_ORDER) {
-        it = ReverseOrderIterator<T>(this);
-    }
-    if (order_ == PRE_ORDER) {
-        it = PreOrderIterator<T>(this);
-    }
-    if (order_ == POST_ORDER) {
-        it = PostOrderIterator<T>(this);
-    }
-    return it;
 }
 
 template<typename T>
