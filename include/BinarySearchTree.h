@@ -1,9 +1,11 @@
 #ifndef CONTAINER_BINARY_SEARCH_TREE_H
 #define CONTAINER_BINARY_SEARCH_TREE_H
 
-#include <initializer_list>
-#include <ostream>
+#include <cstdlib>
 #include <functional>
+#include <initializer_list>
+#include <memory>
+#include <ostream>
 
 enum tree_order {
     IN_ORDER,
@@ -41,13 +43,10 @@ public:
     void setComparator(std::function<int(T, T)> comparator);
 //    Смена функции сравнения
 
-    BinarySearchTree<T> &operator=(const BinarySearchTree<T> &obj);
-//    Перегрузка оператора присваивания
-
-    size_t size();
+    size_t size() const;
 //    Количество элементов в дереве
 
-    bool isEmpty();
+    bool isEmpty() const;
 //    Проверить на пустоту
 
     void add(const T &elem);
@@ -65,56 +64,67 @@ public:
     void clear();
 //    Очистить дерево (удалить все элементы)
 
-    bool contains(const T &elem);
+    bool contains(const T &elem) const;
 //    Проверить имеется ли указанный элемент в дереве
 
-    bool contains(const BinarySearchTree<T> &obj);
+    bool contains(const BinarySearchTree<T> &obj) const;
 //    Проверить имеется ли указанная ветка в дереве
 
-    BinarySearchTree<T> *find(const T &elem);
-//    Найти элемент со значением равным указанному
-
-    T min();
+    T min() const;
 //    Вернуть минимальный элемент
 
-    T max();
+    T max() const;
 //    Вернуть максимальный элемент
 
     void extend(const BinarySearchTree<T> &obj);
 //    Расширить дерево, путем сложения его с данным
 
-    friend BinarySearchTree<T>
-    operator+(const BinarySearchTree<T> &obj1, const BinarySearchTree<T> &obj2);
+    BinarySearchTree<T> &operator=(const BinarySearchTree<T> &obj);
+//    Перегрузка оператора присваивания
+
+    template<typename _T>
+    friend BinarySearchTree<_T>
+    operator+(const BinarySearchTree<_T> &obj1, const BinarySearchTree<_T> &obj2);
 //    Сложение с другим деревом (аналогично extend)
 
     BinarySearchTree<T> &operator+=(const BinarySearchTree<T> &obj);
 //    Сложение с другим деревом (аналогично extend), результат сложения в this
 
-    friend std::ostream &operator<<(std::ostream &os, const BinarySearchTree<T> &obj);
-//    Вывод класса в поток
+    template<typename _T>
+    friend std::ostream &operator<<(std::ostream &os, const BinarySearchTree<_T> &obj);
+//    Перегрузка оператора вывода на поток
 
-    friend bool operator==(const BinarySearchTree<T> &obj1, const BinarySearchTree<T> &obj2);
+    template<typename _T>
+    friend bool operator==(const BinarySearchTree<_T> &obj1, const BinarySearchTree<_T> &obj2);
+//    Перегрузка оператора равенства
 
-    Iterator<T> iteratorBegin();
+    Iterator<T> *iteratorBegin() const;
 //    Получить итератор на начало дерева
 
-    Iterator<T> iteratorEnd();
-//    Получить итератор следующий за последним
+    Iterator<T> *iteratorEnd() const;
+//    Получить итератор на фиктивный элемент, следующий за последним
 
-    T *toArray();
-//    Конвертация дерева в массив
+    T *toArray() const;
+//    Конвертировать ветку в массив
 
 private:
-    BinarySearchTree<T> *minElement();
+    BinarySearchTree<T> *find(const T &elem) const;
+//    Найти элемент со значением равным указанному
 
-    BinarySearchTree<T> *maxElement();
+    BinarySearchTree<T> *minElement() const;
+//    Найти элемент с минимальным значением
+
+    BinarySearchTree<T> *maxElement() const;
+//    Найти элемент с максимальным значением
 
     static int defaultCompare(T a, T b);
+//    Функция сравнения элементов по умолчанию
 
-    size_t addToArray(T *arr, size_t current_size);
+    void addToArray(T *arr, size_t *current_size) const;
+//    Добавить ветку в массив
 
     void dealloc();
-//    освобождения памяти всей текущей ветки
+//    Освободить память всей текущей ветки
 
     BinarySearchTree<T> *parent_;
     BinarySearchTree<T> *smaller_child_;
@@ -126,6 +136,7 @@ private:
     tree_order order_;
     std::function<int(T, T)> comparator_;
 };
+
 
 template<typename T>
 BinarySearchTree<T>::BinarySearchTree(tree_order order, std::function<int(T, T)> comparator) {
@@ -152,7 +163,7 @@ BinarySearchTree<T>::BinarySearchTree(const BinarySearchTree<T> &&obj) noexcept 
     order_ = obj.order_;
     comparator_ = obj.comparator_;
     addMany(obj.toArray(), obj.size());
-    obj.BinarySearchTree();
+    obj.~BinarySearchTree();
 }
 
 template<typename T>
@@ -182,19 +193,7 @@ void BinarySearchTree<T>::setComparator(std::function<int(T, T)> comparator) {
 }
 
 template<typename T>
-BinarySearchTree<T> &BinarySearchTree<T>::operator=(const BinarySearchTree<T> &obj) {
-    if (this == obj) {
-        return *this;
-    }
-    empty_ = true;
-    order_ = obj.order_;
-    comparator_ = obj.comparator_;
-    addMany(obj.toArray(), obj.size());
-    return *this;
-}
-
-template<typename T>
-size_t BinarySearchTree<T>::size() {
+size_t BinarySearchTree<T>::size() const {
     size_t size = 0;
     if (empty_) {
         return size;
@@ -211,7 +210,7 @@ size_t BinarySearchTree<T>::size() {
 }
 
 template<typename T>
-bool BinarySearchTree<T>::isEmpty() {
+bool BinarySearchTree<T>::isEmpty() const {
     return empty_;
 }
 
@@ -220,7 +219,9 @@ void BinarySearchTree<T>::add(const T &elem) {
     if (empty_) {
         empty_ = false;
         value_ = elem;
-        parent_ = this;
+        if (!parent_) {
+            parent_ = this;
+        }
     }
     if (!comparator_(elem, value_)) {
         return;
@@ -299,12 +300,12 @@ void BinarySearchTree<T>::clear() {
 }
 
 template<typename T>
-bool BinarySearchTree<T>::contains(const T &elem) {
+bool BinarySearchTree<T>::contains(const T &elem) const {
     return (bool) find(elem);
 }
 
 template<typename T>
-bool BinarySearchTree<T>::contains(const BinarySearchTree<T> &obj) {
+bool BinarySearchTree<T>::contains(const BinarySearchTree<T> &obj) const {
     bool existence = this == obj;
     if (!existence && smaller_child_) {
         existence = smaller_child_->contains(obj);
@@ -316,7 +317,7 @@ bool BinarySearchTree<T>::contains(const BinarySearchTree<T> &obj) {
 }
 
 template<typename T>
-BinarySearchTree<T> *BinarySearchTree<T>::find(const T &elem) {
+BinarySearchTree<T> *BinarySearchTree<T>::find(const T &elem) const {
     if (empty_) {
         return nullptr;
     }
@@ -333,12 +334,12 @@ BinarySearchTree<T> *BinarySearchTree<T>::find(const T &elem) {
 }
 
 template<typename T>
-T BinarySearchTree<T>::min() {
+T BinarySearchTree<T>::min() const {
     return minElement()->value_;
 }
 
 template<typename T>
-T BinarySearchTree<T>::max() {
+T BinarySearchTree<T>::max() const {
     return maxElement()->value;
 }
 
@@ -350,8 +351,20 @@ void BinarySearchTree<T>::extend(const BinarySearchTree<T> &obj) {
 }
 
 template<typename T>
-BinarySearchTree<T> operator+(const BinarySearchTree<T> &obj1, const BinarySearchTree<T> &obj2) {
-    BinarySearchTree<T> sum(obj1);
+BinarySearchTree<T> &BinarySearchTree<T>::operator=(const BinarySearchTree<T> &obj) {
+    if (this == obj) {
+        return *this;
+    }
+    empty_ = true;
+    order_ = obj.order_;
+    comparator_ = obj.comparator_;
+    addMany(obj.toArray(), obj.size());
+    return *this;
+}
+
+template<typename _T>
+BinarySearchTree<_T> operator+(const BinarySearchTree<_T> &obj1, const BinarySearchTree<_T> &obj2) {
+    BinarySearchTree<_T> sum(obj1);
     sum.extend(obj2);
     return sum;
 }
@@ -362,18 +375,20 @@ BinarySearchTree<T> &BinarySearchTree<T>::operator+=(const BinarySearchTree<T> &
     return this;
 }
 
-template<typename T>
-std::ostream &operator<<(std::ostream &os, const BinarySearchTree<T> &obj) {
-    os << '{';
-    for (auto it = obj.iteratorBegin(); it < obj.iteratorEnd() - 1; it++) {
-        os << *it << ",";
+template<typename _T>
+std::ostream &operator<<(std::ostream &os, const BinarySearchTree<_T> &obj) {
+    os << "{";
+    auto it_begin = *obj.iteratorBegin();
+    auto it_end = --(*obj.iteratorEnd());
+    for (auto it = it_begin; it < it_end; it++) {
+        os << *it << ", ";
     }
-    os << *(--obj.iteratorEnd()) << "}";
+    os << *it_end << "}";
     return os;
 }
 
-template<typename T>
-bool operator==(const BinarySearchTree<T> &obj1, const BinarySearchTree<T> &obj2) {
+template<typename _T>
+bool operator==(const BinarySearchTree<_T> &obj1, const BinarySearchTree<_T> &obj2) {
     if (obj1.order_ != obj2.order_) {
         return false;
     }
@@ -395,65 +410,70 @@ bool operator==(const BinarySearchTree<T> &obj1, const BinarySearchTree<T> &obj2
 }
 
 template<typename T>
-Iterator<T> BinarySearchTree<T>::iteratorBegin() {
-    Iterator<T> it(this);
-    return it.begin(this);
+Iterator<T> *BinarySearchTree<T>::iteratorBegin() const {
+    auto it = new Iterator<T>(*this);
+    it->begin();
+    return it;
 }
 
 template<typename T>
-Iterator<T> BinarySearchTree<T>::iteratorEnd() {
-    Iterator<T> it(this);
-    return it.end(this);
+Iterator<T> *BinarySearchTree<T>::iteratorEnd() const {
+    auto it = new Iterator<T>(*this);
+    it->end();
+    return it;
 }
 
 template<typename T>
-T *BinarySearchTree<T>::toArray() {
+T *BinarySearchTree<T>::toArray() const {
     T *arr = new T[size()];
-    addToArray(arr, 0);
+    size_t arr_size = 0;
+    addToArray(arr, &arr_size);
     return arr;
 }
 
 template<typename T>
-size_t BinarySearchTree<T>::addToArray(T *arr, size_t current_size) {
-    size_t size = current_size;
+void BinarySearchTree<T>::addToArray(T *arr, size_t *current_size) const {
+    if (empty_) {
+        return;
+    }
+    size_t *size = current_size;
     if (order_ == IN_ORDER) {
         if (smaller_child_) {
-            size += smaller_child_->addToArray(arr, size);
+            smaller_child_->addToArray(arr, size);
         }
-        arr[size] = value_;
+        arr[(*size)++] = value_;
         if (greater_child_) {
-            size += greater_child_->addToArray(arr, size);
+            greater_child_->addToArray(arr, size);
         }
     } else if (order_ == REVERSE_ORDER) {
         if (greater_child_) {
-            size += greater_child_->addToArray(arr, size);
+            greater_child_->addToArray(arr, size);
         }
-        arr[size] = value_;
+        arr[(*size)++] = value_;
         if (smaller_child_) {
-            size += smaller_child_->addToArray(arr, size);
+            smaller_child_->addToArray(arr, size);
         }
     } else if (order_ == PRE_ORDER) {
-        arr[size] = value_;
-        if (greater_child_) {
-            size += greater_child_->addToArray(arr, size);
-        }
+        arr[(*size)++] = value_;
         if (smaller_child_) {
-            size += smaller_child_->addToArray(arr, size);
+            smaller_child_->addToArray(arr, size);
+        }
+        if (greater_child_) {
+            greater_child_->addToArray(arr, size);
         }
     } else if (order_ == POST_ORDER) {
-        if (greater_child_) {
-            size += greater_child_->addToArray(arr, size);
-        }
         if (smaller_child_) {
-            size += smaller_child_->addToArray(arr, size);
+            smaller_child_->addToArray(arr, size);
         }
-        arr[size] = value_;
+        if (greater_child_) {
+            greater_child_->addToArray(arr, size);
+        }
+        arr[(*size)++] = value_;
     }
-    return size;
 }
 
 template<typename T>
-BinarySearchTree<T> *BinarySearchTree<T>::minElement() {
+BinarySearchTree<T> *BinarySearchTree<T>::minElement() const {
     BinarySearchTree<T> *minimum = this;
     if (smaller_child_) {
         minimum = smaller_child_->minElement();
@@ -462,7 +482,7 @@ BinarySearchTree<T> *BinarySearchTree<T>::minElement() {
 }
 
 template<typename T>
-BinarySearchTree<T> *BinarySearchTree<T>::maxElement() {
+BinarySearchTree<T> *BinarySearchTree<T>::maxElement() const {
     BinarySearchTree<T> *maximum = this;
     if (greater_child_) {
         maximum = greater_child_->maxElement();
@@ -491,6 +511,262 @@ void BinarySearchTree<T>::dealloc() {
         greater_child_->dealloc();
         delete greater_child_;
     }
+}
+
+
+
+template<typename T>
+class Iterator {
+public:
+    Iterator() = delete;
+//    Конструктор по умолчанию (удален)
+
+    explicit Iterator(const BinarySearchTree<T> &tree);
+//    Конструктор
+
+    Iterator(const Iterator<T> &obj);
+
+    ~Iterator();
+//    Деструктор
+
+    Iterator<T> &begin();
+//    Получить итератор на первый элемент
+
+    Iterator<T> &end();
+//    Получить итератор на фиктивный элемент, следующий за последним
+
+    bool is_end();
+//    Находится ли итератор наа фиктивном элементе, следующем за последним
+
+    bool hasNext();
+//    Имеет ли итератор следующий элемент (в т. ч. фиктивный)
+
+    bool hasPrevious();
+//    Имеет ли итератор предыдущий элемент
+
+    void next();
+//    Сместиться на следующий элемент
+
+    void previous();
+//    Сместиться на предыдущий элемент
+
+    T value();
+//    Получить значение текущего элемента
+
+    template<typename _T>
+    friend Iterator<_T> &operator+(const Iterator<_T> &obj, int offset);
+//    Вернуть итератор, смещенный на offset позиций вперед
+
+    template<typename _T>
+    friend Iterator<_T> &operator-(const Iterator<_T> &obj, int offset);
+//    Вернуть итератор, смещенный на offset позиций назад
+
+    Iterator<T> &operator+=(int offset);
+//    Сместить текущий итератор на offset позиций вперед
+
+    Iterator<T> &operator-=(int offset);
+//    Сместить текущий итератор на offset позиций назад
+
+    Iterator<T> &operator++();
+
+    Iterator<T> &operator--();
+
+    Iterator<T> &operator++(int);
+
+    Iterator<T> &operator--(int);
+
+    T &operator*();
+
+    bool operator==(Iterator<T> &it);
+
+    bool operator!=(Iterator<T> &it);
+
+    bool operator<(Iterator<T> &it);
+
+    bool operator>(Iterator<T> &it);
+
+    bool operator<=(Iterator<T> &it);
+
+    bool operator>=(Iterator<T> &it);
+
+private:
+    T *flattened_tree_;
+    size_t size_;
+    size_t pos_;
+};
+
+template<typename T>
+Iterator<T>::Iterator(const BinarySearchTree<T> &tree) {
+    flattened_tree_ = tree.toArray();
+    size_ = tree.size();
+    pos_ = 0;
+}
+
+template<typename T>
+Iterator<T>::Iterator(const Iterator<T> &obj) {
+    size_ = obj.size_;
+    pos_ = obj.pos_;
+    flattened_tree_ = new T[obj.size_];
+    for (size_t i = 0; i < size_; i++) {
+        flattened_tree_[i] = obj.flattened_tree_[i];
+    }
+}
+
+template<typename T>
+Iterator<T>::~Iterator() {
+    delete [] flattened_tree_;
+}
+
+template<typename T>
+Iterator<T> &Iterator<T>::begin() {
+    pos_ = 0;
+    return *this;
+}
+
+template<typename T>
+Iterator<T> &Iterator<T>::end() {
+    pos_ = size_;
+    return *this;
+}
+
+template<typename T>
+bool Iterator<T>::is_end() {
+    return pos_ == size_;
+}
+
+template<typename T>
+bool Iterator<T>::hasNext() {
+    return pos_ <= size_ - 1;
+}
+
+template<typename T>
+bool Iterator<T>::hasPrevious() {
+    return pos_ > 0;
+}
+
+template<typename T>
+void Iterator<T>::next() {
+    if (hasNext()) {
+        pos_++;
+    }
+}
+
+template<typename T>
+void Iterator<T>::previous() {
+    if (hasPrevious()) {
+        pos_--;
+    }
+}
+
+template<typename T>
+T Iterator<T>::value() {
+    return flattened_tree_[pos_];
+}
+
+template<typename _T>
+Iterator<_T> &operator+(const Iterator<_T> &obj, int offset) {
+    Iterator<_T> sum(obj);
+    if (obj.pos_ + offset < obj.size_) {
+        sum.pos_ += offset;
+    }
+    return sum;
+}
+
+template<typename _T>
+Iterator<_T> &operator-(const Iterator<_T> &obj, int offset) {
+    Iterator<_T> diff(obj);
+    if (obj.pos_ - offset >= 0) {
+        diff.pos_ -= offset;
+    }
+    return diff;
+}
+
+template<typename T>
+Iterator<T> &Iterator<T>::operator+=(int offset) {
+    if (pos_ + offset < size_) {
+        pos_ += offset;
+    }
+    return this;
+}
+
+template<typename T>
+Iterator<T> &Iterator<T>::operator-=(int offset) {
+    if (pos_ - offset >= 0) {
+        pos_ -= offset;
+    }
+    return this;
+}
+
+template<typename T>
+Iterator<T> &Iterator<T>::operator++() {
+    this->next();
+    return *this;
+}
+
+template<typename T>
+Iterator<T> &Iterator<T>::operator--() {
+    this->previous();
+    return *this;
+}
+
+template<typename T>
+Iterator<T> &Iterator<T>::operator++(int) {
+    Iterator<T> old(*this);
+    ++(*this);
+    return old;
+}
+
+template<typename T>
+Iterator<T> &Iterator<T>::operator--(int) {
+    Iterator<T> old(*this);
+    --(*this);
+    return old;
+}
+
+template<typename T>
+T &Iterator<T>::operator*() {
+    return flattened_tree_[pos_];
+}
+
+template<typename T>
+bool Iterator<T>::operator!=(Iterator<T> &it) {
+    return !(this == it);
+}
+
+template<typename T>
+bool Iterator<T>::operator<=(Iterator<T> &it) {
+    return this < it or this == it;
+}
+
+template<typename T>
+bool Iterator<T>::operator>=(Iterator<T> &it) {
+    return this > it or this == it;
+}
+
+template<typename T>
+bool Iterator<T>::operator==(Iterator<T> &it) {
+    if (size_ != it.size_) {
+        return false;
+    }
+    if (pos_ != it.pos_) {
+        return false;
+    }
+    for (size_t i = 0; i < size_; i++) {
+        if (*(flattened_tree_[i]) != *(it.flattened_tree_[i])) {
+            return false;
+        }
+    }
+    return true;
+}
+
+template<typename T>
+bool Iterator<T>::operator<(Iterator<T> &it) {
+    return pos_ < it.pos_;
+}
+
+template<typename T>
+bool Iterator<T>::operator>(Iterator<T> &it) {
+    return pos_ > it.pos_;
 }
 
 #endif  // CONTAINER_BINARY_SEARCH_TREE_H
