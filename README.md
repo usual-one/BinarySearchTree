@@ -2,7 +2,7 @@
 Binary search tree class for BMSTU OOP course
 
 ### Description
-BinarySearchTree is an implementation of a container class BST.
+BinarySearchTree is an implementation of a container class [BST](https://wikipedia.org/wiki/Binary_search_tree).
 
 ### Languages & utils
 This project uses 
