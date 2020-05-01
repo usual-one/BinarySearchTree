@@ -100,6 +100,10 @@ public:
     friend bool operator==(const BinarySearchTree<_T> &obj1, const BinarySearchTree<_T> &obj2);
 //    Перегрузка оператора равенства
 
+    template<typename _T>
+    friend bool operator!=(const BinarySearchTree<_T> &obj1, const BinarySearchTree <_T> &obj2);
+//    Перегрузка оператора неравенства
+
     Iterator<T> *iteratorBegin() const;
 //    Получить итератор на начало дерева
 
@@ -440,6 +444,11 @@ bool operator==(const BinarySearchTree<_T> &obj1, const BinarySearchTree<_T> &ob
     return true;
 }
 
+template<typename _T>
+bool operator!=(const BinarySearchTree<_T> &obj1, const BinarySearchTree <_T> &obj2) {
+    return !(obj1 == obj2);
+}
+
 template<typename T>
 Iterator<T> *BinarySearchTree<T>::iteratorBegin() const {
     auto it = new Iterator<T>(*this);
@@ -566,7 +575,7 @@ public:
     Iterator<T> &end();
 //    Получить итератор на фиктивный элемент, следующий за последним
 
-    bool is_end();
+    bool isEnd();
 //    Находится ли итератор наа фиктивном элементе, следующем за последним
 
     bool hasNext();
@@ -671,7 +680,7 @@ Iterator<T> &Iterator<T>::end() {
 }
 
 template<typename T>
-bool Iterator<T>::is_end() {
+bool Iterator<T>::isEnd() {
     return pos_ == size_;
 }
 
@@ -706,7 +715,7 @@ void Iterator<T>::previous() {
 
 template<typename T>
 T &Iterator<T>::value() {
-    if (is_end()) {
+    if (isEnd()) {
         throw BSTIteratorAccessingEndValueException("end value to access");
     }
     return flattened_tree_[pos_];

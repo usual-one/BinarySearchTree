@@ -183,3 +183,10 @@ Equality operator overload.
 template<typename _T>
 friend bool operator==(const BinarySearchTree<_T> &obj1, const BinarySearchTree<_T> &obj2);
 ```
+
+
+Inequality operator overload.
+```c++
+template<typename _T>
+friend bool operator!=(const BinarySearchTree<_T> &obj1, const BinarySearchTree <_T> &obj2)
+```

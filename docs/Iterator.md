@@ -40,7 +40,7 @@ Iterator<T> &end();
 
 Checks if iterator is on the end position.
 ```c++
-bool is_end();
+bool isEnd();
 ```
     
 
