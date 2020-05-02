@@ -38,12 +38,6 @@ Iterator<T> &end();
 ```
 
 
-Checks if iterator is on the end position.
-```c++
-bool isEnd();
-```
-    
-
 Checks if element next for current exists (end element counts).
 ```c++
 bool hasNext();
@@ -53,6 +47,12 @@ bool hasNext();
 Checks if element previous for current exists.
 ```c++
 bool hasPrevious();
+```
+
+
+Checks if iterator is on the end position.
+```c++
+bool isEnd();
 ```
 
 
@@ -77,20 +77,6 @@ Gets current element value.
 May throw `BSTIteratorAccessingEndValueException` if element is end element.
 ```c++
 T &value();
-```
-
-
-Addition operator overload.
-```c++
-template<typename _T>
-friend Iterator<_T> &operator+(const Iterator<_T> &obj, int offset);
-```
-
-
-Subtraction operator overload.
-```c++
-template<typename _T>
-friend Iterator<_T> &operator-(const Iterator<_T> &obj, int offset);
 ```
 
 
@@ -169,4 +155,18 @@ bool operator<=(Iterator<T> &it);
 Greater or equal operator overload.
 ```c++
 bool operator>=(Iterator<T> &it);
+```
+
+
+Addition operator overload.
+```c++
+template<typename _T>
+friend Iterator<_T> &operator+(const Iterator<_T> &obj, int offset);
+```
+
+
+Subtraction operator overload.
+```c++
+template<typename _T>
+friend Iterator<_T> &operator-(const Iterator<_T> &obj, int offset);
 ```

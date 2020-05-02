@@ -32,30 +32,6 @@ Destructor.
 ```
 
 
-Sets traversal order.
-```c++
-void setOrder(tree_order order);
-```
-
-
-Sets comparator that compares values of type T.
-```c++
-void setComparator(std::function<int(T, T)> comparator);
-```
-
-
-Gets number of elements in the tree.
-```c++
-size_t size() const;
-```
-
-
-Checks if number of elements is zero.
-```c++
-bool isEmpty() const;
-```
-
-
 Adds new element.
 
 May throw `BSTDuplicateValueException` if element already exists in the tree.
@@ -69,6 +45,73 @@ Adds new elements from given array.
 May throw `BSTDuplicateValueException` if some elements already exist in the tree.
 ```c++
 void addMany(const T *arr, size_t size);
+```
+
+
+Removes every element from the tree.
+```c++
+void clear();
+```
+    
+    
+Checks if tree contains given element.
+```c++
+bool contains(const T &elem);
+```
+
+
+Checks if given tree is a subtree.
+
+May throw `BSTEmptyException` if given tree is empty.
+```c++
+bool contains(const BinarySearchTree<T> &obj) const;
+```
+
+
+Copies given tree
+```c++
+void copy(const BinarySearchTree<T> &obj);
+```
+
+
+Extend tree by adding given tree in its order.
+
+May throw `BSTEmptyException` if given tree is empty. Duplicate values are ignored.
+```c++
+void extend(const BinarySearchTree<T> &obj);
+```
+
+
+Checks if number of elements is zero.
+```c++
+bool isEmpty() const;
+```
+
+
+Gets iterator for the first element.
+```c++
+Iterator<T> *iteratorBegin() const;
+```
+    
+
+Gets iterator for the element next for last one.
+```c++
+Iterator<T> *iteratorEnd() const;
+```
+
+Gets maximal element.
+
+May throw `BSTEmptyException` if tree is empty.
+```c++
+T max() const;
+```
+
+
+Gets minimal element.
+
+May throw `BSTEmptyException` if tree is empty.
+```c++
+T min() const;
 ```
 
 
@@ -88,47 +131,21 @@ void removeMany(const T *arr, size_t size);
 ```
 
 
-Removes every element from the tree.
+Sets comparator that compares values of type T.
 ```c++
-void clear();
-```
-    
-    
-Checks if tree contains given element.
-```c++
-bool contains(const T &elem) const;
+void setComparator(std::function<int(T, T)> comparator);
 ```
 
 
-Checks if given tree is a subtree.
-
-May throw `BSTEmptyException` if given tree is empty.
+Sets traversal order.
 ```c++
-bool contains(const BinarySearchTree<T> &obj) const;
+void setOrder(tree_order order);
 ```
 
 
-Gets minimal element.
-
-May throw `BSTEmptyException` if tree is empty.
+Gets number of elements in the tree.
 ```c++
-T min() const;
-```
-
-
-Gets maximal element.
-
-May throw `BSTEmptyException` if tree is empty.
-```c++
-T max() const;
-```
-
-
-Extend tree by adding given tree in its order.
-
-May throw `BSTEmptyException` if given tree is empty.
-```c++
-void extend(const BinarySearchTree<T> &obj);
+size_t size() const;
 ```
 
 
@@ -140,21 +157,15 @@ T *toArray() const;
 ```
 
 
-Gets iterator for the first element.
-```c++
-Iterator<T> *iteratorBegin() const;
-```
-    
-
-Gets iterator for the element next for last one.
-```c++
-Iterator<T> *iteratorEnd() const;
-```
-
-
 Assigment operator overload.
 ```c++
 BinarySearchTree<T> &operator=(const BinarySearchTree<T> &obj);
+```
+
+
+Addition & assigment operator overload (same as `extend`).
+```c++
+BinarySearchTree<T> &operator+=(const BinarySearchTree<T> &obj);
 ```
 
 
@@ -162,12 +173,6 @@ Addition operator overload.
 ```c++
 template<typename _T>
 friend BinarySearchTree<_T> operator+(const BinarySearchTree<_T> &obj1, const BinarySearchTree<_T> &obj2);
-```
-
-
-Addition & assigment operator overload (same as `extend`).
-```c++
-BinarySearchTree<T> &operator+=(const BinarySearchTree<T> &obj);
 ```
 
 

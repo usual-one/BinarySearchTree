@@ -12,6 +12,7 @@ int custom_comparator(int a, int b) {
 }
 
 int main() {
+    std::cout << "--- TESTING STARTED ---" << std::endl;
     auto first_tree = BinarySearchTree<int>(IN_ORDER); // testing constructor
 
     std::cout << "first_tree = " << first_tree << std::endl; // testing <<
@@ -39,14 +40,14 @@ int main() {
 
     std::cout << "first_tree contains = " << first_tree.contains(2)
               << std::endl; // testing contains()
-    std::cout << "must be               true" << std::endl;
+    std::cout << "must be               1" << std::endl;
 
     auto second_tree = BinarySearchTree<int>(IN_ORDER);
     int numbers_to_add2[] = {5, 2, 8};
     second_tree.addMany(numbers_to_add2, 3);
     std::cout << "first_tree contains second = " << first_tree.contains(second_tree)
               << std::endl; // testing contains() for trees
-    std::cout << "must be                      true" << std::endl;
+    std::cout << "must be                      1" << std::endl;
 
     second_tree.add(1);
     first_tree.extend(second_tree); // testing extend()
@@ -66,7 +67,7 @@ int main() {
     std::cout << "first_tree = " << first_tree << std::endl;
     std::cout << "must be      {}" << std::endl;
     std::cout << "first_tree size = " << first_tree.size() << std::endl;
-    std::cout << "must be      0" << std::endl;
+    std::cout << "must be           0" << std::endl;
 
     auto third_tree = first_tree; // testing operator =
     std::cout << "third_tree = " << third_tree << std::endl;
@@ -78,15 +79,15 @@ int main() {
 
     auto fourth_tree = first_tree + second_tree; // testing operator +
     std::cout << "fourth_tree = " << fourth_tree << std::endl;
-    std::cout << "must be      {1, 2, 5, 8}" << std::endl;
+    std::cout << "must be       {1, 2, 5, 8}" << std::endl;
 
     std::cout << "operator == " << (first_tree == fourth_tree)
               << std::endl; // testing operator ==
-    std::cout << "must be      false" << std::endl;
+    std::cout << "must be     0" << std::endl;
 
     std::cout << "operator != " << (first_tree != fourth_tree)
               << std::endl; // testing operator !=
-    std::cout << "must be      true" << std::endl;
+    std::cout << "must be     1" << std::endl;
 
     int *array_from_tree = second_tree.toArray(); // testing toArray()
     std::cout << "array_from_tree = ";
@@ -125,10 +126,10 @@ int main() {
     std::cout << "must be    8" << std::endl;
 
     std::cout << "it.hasNext() = " << it.hasNext() << std::endl; // testing hasNext()
-    std::cout << "must be        true" << std::endl;
+    std::cout << "must be        1" << std::endl;
 
     std::cout << "it.hasPrevious() = " << it.hasPrevious() << std::endl; // testing hasPrevious()
-    std::cout << "must be            false" << std::endl;
+    std::cout << "must be            0" << std::endl;
 
     std::cout << "iterator++ = " << *(it++) << std::endl; // testing operator ++(int)
     std::cout << "must be      8" << std::endl;
@@ -145,41 +146,41 @@ int main() {
     auto it_end = *fourth_tree.iteratorEnd(); // testing iteratorEnd()
 
     std::cout << "it_end.isEnd() = " << it_end.isEnd() << std::endl; // testing isEnd()
-    std::cout << "must be          true" << std::endl;
+    std::cout << "must be          1" << std::endl;
 
     it_end -= 1; // testing operator -=
     std::cout << "it_end.isEnd() = " << it_end.isEnd() << std::endl;
-    std::cout << "must be          false" << std::endl;
+    std::cout << "must be          0" << std::endl;
 
     it_end += 1; // testing operator +=
     std::cout << "it_end.isEnd() = " << it_end.isEnd() << std::endl;
-    std::cout << "must be          true" << std::endl;
+    std::cout << "must be          1" << std::endl;
 
-    std::cout << "operator ==" << (it_end == it) << std::endl; // testing operator ==
-    std::cout << "must be     false" << std::endl;
+    std::cout << "operator == " << (it_end == it) << std::endl; // testing operator ==
+    std::cout << "must be     0" << std::endl;
 
-    std::cout << "operator !=" << (it_end != it) << std::endl; // testing operator !=
-    std::cout << "must be     true" << std::endl;
+    std::cout << "operator != " << (it_end != it) << std::endl; // testing operator !=
+    std::cout << "must be     1" << std::endl;
 
-    std::cout << "operator <=" << (it_end <= it) << std::endl; // testing operator <=
-    std::cout << "must be     false" << std::endl;
+    std::cout << "operator <= " << (it_end <= it) << std::endl; // testing operator <=
+    std::cout << "must be     0" << std::endl;
 
-    std::cout << "operator >=" << (it_end >= it) << std::endl; // testing operator >=
-    std::cout << "must be     true" << std::endl;
+    std::cout << "operator >= " << (it_end >= it) << std::endl; // testing operator >=
+    std::cout << "must be     1" << std::endl;
 
-    std::cout << "operator <" << (it_end < it) << std::endl; // testing operator <
-    std::cout << "must be    false" << std::endl;
+    std::cout << "operator < " << (it_end < it) << std::endl; // testing operator <
+    std::cout << "must be    0" << std::endl;
 
-    std::cout << "operator >" << (it_end > it) << std::endl; // testing operator >
-    std::cout << "must be    true" << std::endl;
+    std::cout << "operator > " << (it_end > it) << std::endl; // testing operator >
+    std::cout << "must be    1" << std::endl;
 
     it_end.begin(); // testing begin()
     std::cout << "it_end.isEnd() = " << (it_end.isEnd() && !it_end.hasPrevious()) << std::endl;
-    std::cout << "must be          false" << std::endl;
+    std::cout << "must be          0" << std::endl;
 
     it_end.end(); // testing end()
     std::cout << "it_end.isEnd() = " << it_end.isEnd() << std::endl;
-    std::cout << "must be          true" << std::endl;
+    std::cout << "must be          1" << std::endl;
 
     auto it_add = it + 2; // testing operator +
     std::cout << "iterator = " << *it_add << std::endl;
@@ -189,5 +190,6 @@ int main() {
     std::cout << "iterator = " << *it_subtract << std::endl;
     std::cout << "must be    8" << std::endl;
 
+    std::cout << "--- TESTING FINISHED ---" << std::endl;
     return 0;
 }
