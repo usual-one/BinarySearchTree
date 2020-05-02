@@ -90,13 +90,13 @@ bool isEmpty() const;
 
 Gets iterator for the first element.
 ```c++
-Iterator<T> *iteratorBegin() const;
+std::unique_ptr<Iterator<T>> iteratorBegin() const;
 ```
     
 
 Gets iterator for the element next for last one.
 ```c++
-Iterator<T> *iteratorEnd() const;
+std::unique_ptr<Iterator<T>> iteratorEnd() const;
 ```
 
 Gets maximal element.
@@ -149,7 +149,7 @@ size_t size() const;
 ```
 
 
-Convert the tree to array.
+Convert the tree to array. Returns pointer to dynamicly allocated memory that should be deallocated with free() or delete [].
 
 May throw `BSTEmptyException` if tree is empty.
 ```c++

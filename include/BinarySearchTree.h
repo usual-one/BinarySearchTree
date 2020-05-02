@@ -161,7 +161,6 @@ BinarySearchTree<T>::BinarySearchTree(tree_order order, std::function<int(T, T)>
     parent_ = nullptr;
     smaller_child_ = nullptr;
     greater_child_ = nullptr;
-    value_ = 0;
     empty_ = true;
     order_ = order;
     comparator_ = comparator;
@@ -177,10 +176,10 @@ BinarySearchTree<T>::BinarySearchTree(const BinarySearchTree<T> &obj) {
 
 template<typename T>
 BinarySearchTree<T>::BinarySearchTree(const BinarySearchTree<T> &&obj) noexcept {
-    empty_ = true;
-    order_ = obj.order_;
-    comparator_ = obj.comparator_;
-    addMany(obj.toArray(), obj.size());
+    parent_ = nullptr;
+    smaller_child_ = nullptr;
+    greater_child_ = nullptr;
+    copy(obj);
     obj.~BinarySearchTree();
 }
 
@@ -298,7 +297,7 @@ void BinarySearchTree<T>::extend(const BinarySearchTree<T> &obj) {
     if (obj.isEmpty()) {
         throw BSTEmptyException("empty tree to extend by");
     }
-    for (auto it = *(obj.iteratorBegin()); it < *(obj.iteratorEnd()); it++) {
+    for (auto it = *obj.iteratorBegin(); it < *obj.iteratorEnd(); it++) {
         try {
             add(*it);
         } catch (BSTDuplicateValueException &err) {}
@@ -351,15 +350,12 @@ void BinarySearchTree<T>::remove(const T &elem) {
     if (found->smaller_child_ && found->greater_child_) {
         if (found->smaller_child_->size() > found->greater_child_->size()) {
             successor = found->smaller_child_->maxElement();
-            T successor_value = successor->value_;
-            remove(successor_value);
-            found->value_ = successor_value;
         } else {
             successor = found->greater_child_->minElement();
-            T successor_value = successor->value_;
-            remove(successor_value);
-            found->value_ = successor_value;
         }
+        T successor_value = successor->value_;
+        remove(successor_value);
+        found->value_ = successor_value;
         return;
     }
 
@@ -454,10 +450,10 @@ BinarySearchTree<T> &BinarySearchTree<T>::operator=(const BinarySearchTree<T> &o
     if (this == obj) {
         return *this;
     }
-    empty_ = true;
-    order_ = obj.order_;
-    comparator_ = obj.comparator_;
-    addMany(obj.toArray(), obj.size());
+    parent_ = nullptr;
+    smaller_child_ = nullptr;
+    greater_child_ = nullptr;
+    copy(obj);
     return *this;
 }
 
