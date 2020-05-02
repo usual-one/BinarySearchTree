@@ -191,5 +191,7 @@ int main() {
     std::cout << "must be    8" << std::endl;
 
     std::cout << "--- TESTING FINISHED ---" << std::endl;
+
+    delete [] array_from_tree;
     return 0;
 }

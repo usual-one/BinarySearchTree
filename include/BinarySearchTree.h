@@ -63,10 +63,10 @@ public:
     bool isEmpty() const;
 //    Проверить на пустоту
 
-    Iterator<T> *iteratorBegin() const;
+    std::unique_ptr<Iterator<T>> iteratorBegin() const;
 //    Получить итератор на начало дерева
 
-    Iterator<T> *iteratorEnd() const;
+    std::unique_ptr<Iterator<T>> iteratorEnd() const;
 //    Получить итератор на фиктивный элемент, следующий за последним
 
     T max();
@@ -311,15 +311,15 @@ bool BinarySearchTree<T>::isEmpty() const {
 }
 
 template<typename T>
-Iterator<T> *BinarySearchTree<T>::iteratorBegin() const {
-    auto it = new Iterator<T>(*this);
+std::unique_ptr<Iterator<T>> BinarySearchTree<T>::iteratorBegin() const {
+    auto it = std::make_unique<Iterator<T>>(*this);
     it->begin();
     return it;
 }
 
 template<typename T>
-Iterator<T> *BinarySearchTree<T>::iteratorEnd() const {
-    auto it = new Iterator<T>(*this);
+std::unique_ptr<Iterator<T>> BinarySearchTree<T>::iteratorEnd() const {
+    auto it = std::make_unique<Iterator<T>>(*this);
     it->end();
     return it;
 }
@@ -498,7 +498,7 @@ bool operator==(const BinarySearchTree<_T> &obj1, const BinarySearchTree<_T> &ob
         return false;
     }
     if (!obj1.isEmpty()) {
-        for (auto it1 = obj1.iteratorBegin(), it2 = obj2.iteratorBegin(); it1 < obj1.iteratorEnd();
+        for (auto it1 = *obj1.iteratorBegin(), it2 = *obj2.iteratorBegin(); it1 < *obj1.iteratorEnd();
              it1++, it2++) {
             if (*it1 != *it2) {
                 return false;
